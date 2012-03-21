@@ -12,10 +12,11 @@ class Mustard
   end
 
   def ==(expected)
-    unless (@value == expected) == @desired_result
+    if (@value == expected) == @desired_result
+      true
+    else
       raise MustardAssertionError, "Expected #{expected} but got #{@value}"
     end
-    true
   end
 
   def !=(expected)
@@ -31,10 +32,11 @@ class Mustard
   end
 
   def ===(expected)
-    unless (expected.send :===, @value) == @desired_result
+    if (expected.send :===, @value) == @desired_result
+      true
+    else
       throw "Expected to be able to infer #{other} from #{@value} but could not"
     end
-    true
   end
 
   def respond_to?(symbol)
@@ -56,15 +58,16 @@ class Mustard
   private
 
   def evaluate(symbol, *args)
-    unless (@value.send symbol, *args) == @desired_result
+    if (@value.send symbol, *args) == @desired_result
+      true
+    else
       raise "Expected #{@value} #{symbol} #{other} to be #{@desired_result} but it wasn't"
     end
-    true
   end
 
 end
 
-class MustardAssertionError < RuntimeError
+class MustardAssertionError < MiniTest::Assertion
 
   def initialize(msg)
     @msg = msg

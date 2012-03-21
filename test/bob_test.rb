@@ -1,7 +1,7 @@
 require 'test/unit'
 require_relative '../lib/mustard'
 
-class BobTest < Test::Unit::TestCase
+class BobTest < MiniTest::Unit::TestCase
 
   def test_equal_values_return_true_when_checked_for_equality
     assert 1.must == 1
@@ -63,7 +63,9 @@ class BobTest < Test::Unit::TestCase
   end
 
   def test_assertion_messages
-    assert 1.must == 2
+    assert_raises MustardAssertionError do
+      1.must == 2
+    end
   end
 
 end
