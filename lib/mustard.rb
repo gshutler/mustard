@@ -11,11 +11,7 @@ class Mustard
   end
 
   def ==(expected)
-    if (@value == expected) == @desired_result
-      true
-    else
-      raise MustardAssertionError, "Expected #{expected} but got #{@value}"
-    end
+    evaluate(:==, expected)
   end
 
   def !=(expected)
@@ -31,11 +27,7 @@ class Mustard
   end
 
   def ===(expected)
-    if (expected.send :===, @value) == @desired_result
-      true
-    else
-      throw "Expected to be able to infer #{other} from #{@value} but could not"
-    end
+    evaluate :===, expected
   end
 
   def respond_to?(symbol)
@@ -46,11 +38,11 @@ class Mustard
     if @value.respond_to? symbol
       evaluate symbol, *args
     elsif @value.respond_to? "#{symbol}?".to_sym
-      evaluate "#{symbol}?".to_sym, *args
+      evaluate "#{symbol}?", *args
     elsif @value.respond_to? "#{symbol}!".to_sym
-      evaluate "#{symbol}!".to_sym, *args
+      evaluate "#{symbol}!", *args
     elsif symbol.to_s.start_with? 'be_'
-      method_missing(symbol.to_s[3..-1].to_sym, *args)
+      method_missing symbol.to_s[3..-1], *args
     else
       super
     end
@@ -59,12 +51,31 @@ class Mustard
   private
 
   def evaluate(symbol, *args)
+    symbol = symbol.to_sym unless symbol.instance_of? Symbol
     if (@value.send symbol, *args) == @desired_result
       true
+    elsif args.size == 0 and @desired_result
+      failed_assertion "Expected #{print_val @value} to be #{plain_symbol symbol}"
+    elsif args.size == 0
+      failed_assertion "Expected #{print_val @value} to not be #{plain_symbol symbol}"
     elsif args.size == 1
-      failed_assertion "Expected #{@value} #{symbol} #{args[0]} to be #{@desired_result}"
+      failed_assertion "Expected #{print_val @value} #{plain_symbol symbol} #{print_val args[0]} to be #{@desired_result}"
     else
-      failed_assertion "Expected #{@value} to be #{symbol}"
+      failed_assertion "Expected #{print_val @value}.#{plain_symbol symbol}(#{args.map{ |a| print_val a }.join(', ')}) to be #{@desired_result}"
+    end
+  end
+
+  def plain_symbol(symbol)
+    symbol.to_s.gsub(/[\?\!]$/, '')
+  end
+
+  def print_val(value)
+    if value.nil?
+      'nil'
+    elsif value.instance_of? Symbol
+      ":#{value}"
+    else
+      value
     end
   end
 

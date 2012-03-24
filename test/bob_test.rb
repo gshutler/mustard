@@ -63,7 +63,7 @@ class BobTest < MiniTest::Unit::TestCase
   end
 
   def test_assertion_messages
-    assert_raises MustardAssertionError do
+    assert_failure_message 'Expected 1 == 2 to be true' do
       1.must == 2
     end
   end
@@ -72,8 +72,30 @@ class BobTest < MiniTest::Unit::TestCase
     [].must.be_empty
     nil.must.be_nil
     [].must_not.be_nil
-    assert_raises MustardAssertionError do
+    assert_failure_message 'Expected [] to be nil' do
       [].must.be_nil
+    end
+    assert_failure_message 'Expected nil to not be nil' do
+      nil.must_not.be_nil
+    end
+  end
+
+  def test_be_assertion_with_args
+    [1, 2].must.include 1
+    assert_failure_message 'Expected [1, 3] include 2 to be true' do
+      [1, 3].must.include 2
+    end
+    assert_failure_message 'Expected {:foo=>1} has_key :bar to be true' do
+      {:foo => 1}.must.has_key :bar
+    end
+  end
+
+  def assert_failure_message(msg)
+    begin
+      yield
+      assert_fail
+    rescue MustardAssertionError => e
+      assert_equal msg, e.to_s
     end
   end
 
