@@ -68,4 +68,13 @@ class BobTest < MiniTest::Unit::TestCase
     end
   end
 
+  def test_be_assertion_for_booleans
+    [].must.be_empty
+    nil.must.be_nil
+    [].must_not.be_nil
+    assert_raises MustardAssertionError do
+      [].must.be_nil
+    end
+  end
+
 end

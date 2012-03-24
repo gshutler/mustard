@@ -1,4 +1,3 @@
-
 class Mustard
 
   def initialize(value, desired_result = true)
@@ -43,13 +42,15 @@ class Mustard
     evaluate :respond_to?, symbol
   end
 
-  def method_missing(symbol, args)
+  def method_missing(symbol, *args)
     if @value.respond_to? symbol
       evaluate symbol, *args
     elsif @value.respond_to? "#{symbol}?".to_sym
       evaluate "#{symbol}?".to_sym, *args
     elsif @value.respond_to? "#{symbol}!".to_sym
       evaluate "#{symbol}!".to_sym, *args
+    elsif symbol.to_s.start_with? 'be_'
+      method_missing(symbol.to_s[3..-1].to_sym, *args)
     else
       super
     end
@@ -60,9 +61,15 @@ class Mustard
   def evaluate(symbol, *args)
     if (@value.send symbol, *args) == @desired_result
       true
+    elsif args.size == 1
+      failed_assertion "Expected #{@value} #{symbol} #{args[0]} to be #{@desired_result}"
     else
-      raise "Expected #{@value} #{symbol} #{other} to be #{@desired_result} but it wasn't"
+      failed_assertion "Expected #{@value} to be #{symbol}"
     end
+  end
+
+  def failed_assertion(msg)
+    raise MustardAssertionError.new msg
   end
 
 end
