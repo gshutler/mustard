@@ -1,7 +1,7 @@
 require 'test/unit'
 require_relative '../lib/mustard'
 
-class BobTest < MiniTest::Unit::TestCase
+class MustardTest < MiniTest::Unit::TestCase
 
   def test_equal_values_return_true_when_checked_for_equality
     assert 1.must == 1
